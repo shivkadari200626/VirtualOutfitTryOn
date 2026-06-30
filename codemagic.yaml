@@ -6,15 +6,13 @@ workflows:
     environment:
       vars:
         GEMINI_API_KEY: $GEMINI_API_KEY
+      java: 17
     scripts:
       - name: Set up JDK 17
         script: |
           java -version
-      - name: Make gradlew executable
-        script: |
-          chmod +x ./gradlew
       - name: Build debug APK
         script: |
-          ./gradlew assembleDebug --no-daemon
+          gradle assembleDebug --no-daemon
     artifacts:
       - app/build/outputs/apk/debug/*.apk
