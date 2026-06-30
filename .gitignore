@@ -1,0 +1,34 @@
+# Local configuration
+local.properties
+
+# Gradle files
+.gradle/
+build/
+**/build/
+
+# Android Studio
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# APK and AAB files
+*.apk
+*.aab
+
+# Logs
+*.log
+
+# Keystore files
+*.jks
+*.keystore
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Kotlin
+out/
+
+# Codemagic
+codemagic.yaml
