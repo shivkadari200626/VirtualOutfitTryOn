@@ -4,17 +4,16 @@ plugins {
 }
 
 android {
-    namespace = "com.yourpackage.yourapp"
+android {
+    namespace = "com.kannod.virtualcloset"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.yourpackage.yourapp"
+        applicationId = "com.kannod.virtualcloset"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "GEMINI_API_KEY", "\"${System.getenv("GEMINI_API_KEY") ?: ""}\"")
     }
 
     buildTypes {
@@ -27,18 +26,14 @@ android {
         }
     }
 
+    buildFeatures {
+        viewBinding = true    // ← This fixes ActivityMainBinding
+        buildConfig = true    // ← This fixes BuildConfig
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-
-    buildFeatures {
-        viewBinding = true
-        buildConfig = true
     }
 }
 
