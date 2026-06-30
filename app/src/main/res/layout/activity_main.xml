@@ -20,4 +20,11 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="32dp" />
 
+    <!-- Add this hidden ImageView for result -->
+    <ImageView
+        android:id="@+id/resultImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
