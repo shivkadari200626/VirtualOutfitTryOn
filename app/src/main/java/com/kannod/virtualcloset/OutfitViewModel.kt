@@ -35,7 +35,7 @@ class OutfitViewModel : ViewModel() {
         .readTimeout(60, TimeUnit.SECONDS)
         .build()
 
-    private val GROQ_API_KEY = "YOUR_GROQ_KEY_HERE" // Get from https://console.groq.com/keys
+    private val GROQ_API_KEY = BuildConfig.GROQ_API_KEY // Get from https://console.groq.com/keys
 
     fun generateOutfit(context: Context, imageUri: Uri, userPrompt: String) {
         viewModelScope.launch {
