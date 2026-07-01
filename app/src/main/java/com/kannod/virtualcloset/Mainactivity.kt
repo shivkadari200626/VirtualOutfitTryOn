@@ -24,27 +24,31 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-class Mainactivity : AppCompatActivity() {
-
+class MainActivity : AppCompatActivity() {
+    private val viewModel: OutfitViewModel by viewModels() // add this line
     private lateinit var binding: ActivityMainBinding
-    private var imageCapture: ImageCapture? = null
-    private lateinit var cameraExecutor: ExecutorService
-    private lateinit var viewModel: TryOnViewModel
 
-    private val activityResultLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            var permissionGranted = true
-            permissions.entries.forEach {
-                if (it.key in REQUIRED_PERMISSIONS && !it.value)
-                    permissionGranted = false
-            }
-            if (!permissionGranted) {
-                Toast.makeText(this, "Camera permission required", Toast.LENGTH_SHORT).show()
-                finish()
-            } else {
-                startCamera()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        // Listen for results from ViewModel
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { result ->
+                    binding.resultText.text = result // update your TextView
+                }
             }
         }
+
+        // Call it when button clicked
+        binding.generateBtn.setOnClickListener {
+            val imageUri = // get your image Uri here
+            viewModel.generateOutfit(this, imageUri, "Suggest an outfit for this")
+        }
+    }
+}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
