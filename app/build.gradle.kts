@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -14,11 +17,11 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        // Load API key from local.properties
-        val properties = java.util.Properties()
+        // Load API key from local.properties - KTS version
+        val properties = Properties()
         val localPropsFile = rootProject.file("local.properties")
         if (localPropsFile.exists()) {
-            properties.load(localPropsFile.inputStream())
+            properties.load(FileInputStream(localPropsFile))
         }
         buildConfigField("String", "GROQ_API_KEY", "\"${properties.getProperty("GROQ_API_KEY", "")}\"")
     }
@@ -35,7 +38,7 @@ android {
 
     buildFeatures {
         viewBinding = true
-        buildConfig = true  // Only need this once, here
+        buildConfig = true
     }
 
     compileOptions {
