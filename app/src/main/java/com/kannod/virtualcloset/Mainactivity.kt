@@ -10,6 +10,7 @@ import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -17,45 +18,41 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.kannod.virtualcloset.databinding.ActivityMainBinding
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
-    private val viewModel: OutfitViewModel by viewModels() // add this line
     private lateinit var binding: ActivityMainBinding
+    private val viewModel: OutfitViewModel by viewModels() // Using OutfitViewModel now
+    private var imageCapture: ImageCapture? = null
+    private lateinit var cameraExecutor: ExecutorService
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        // Listen for results from ViewModel
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { result ->
-                    binding.resultText.text = result // update your TextView
-                }
+    private val activityResultLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            var permissionGranted = true
+            permissions.entries.forEach {
+                if (it.key in REQUIRED_PERMISSIONS && !it.value)
+                    permissionGranted = false
+            }
+            if (!permissionGranted) {
+                Toast.makeText(baseContext, "Permission request denied", Toast.LENGTH_SHORT).show()
+            } else {
+                startCamera()
             }
         }
 
-        // Call it when button clicked
-        binding.generateBtn.setOnClickListener {
-            val imageUri = // get your image Uri here
-            viewModel.generateOutfit(this, imageUri, "Suggest an outfit for this")
-        }
-    }
-}
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel = ViewModelProvider(this)[TryOnViewModel::class.java]
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         if (allPermissionsGranted()) {
@@ -69,27 +66,23 @@ class MainActivity : AppCompatActivity() {
         }
 
         observeViewModel()
-        Log.d("API_KEY_DEBUG", "Key: ${BuildConfig.GEMINI_API_KEY}")
     }
 
     private fun observeViewModel() {
-        viewModel.resultImage.observe(this) { bitmap ->
-            if (bitmap != null) {
-                val intent = Intent(this, ResultActivity::class.java)
-                // Convert bitmap to byte array to pass
-                val stream = java.io.ByteArrayOutputStream()
-                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
-                val byteArray = stream.toByteArray()
-                intent.putExtra("result_image", byteArray)
-                startActivity(intent)
+        // Listen for text results from Groq
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { result ->
+                    if (result.isNotBlank()) {
+                        Toast.makeText(this@MainActivity, result, Toast.LENGTH_LONG).show()
+                        Log.d(TAG, "Groq result: $result")
+                    }
+                }
             }
         }
 
-        viewModel.error.observe(this) { errorMsg ->
-            errorMsg?.let {
-                Toast.makeText(this, it, Toast.LENGTH_LONG).show()
-            }
-        }
+        // Keep your old error handling if OutfitViewModel has it
+        // viewModel.error.observe(this) { ... }
     }
 
     private fun takePhoto() {
@@ -122,14 +115,9 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
 
-                    // Send to Gemini API
+                    // Send to Groq via OutfitViewModel
                     output.savedUri?.let { uri ->
-                           val apiKey = BuildConfig.GEMINI_API_KEY
-                           if (apiKey.isBlank()) {
-                              Toast.makeText(baseContext, "API key missing", Toast.LENGTH_SHORT).show()
-                              return
-                            }
-                           viewModel.generateOutfit(uri, apiKey, contentResolver) // use 'uri' not 'imageUri'
+                        viewModel.generateOutfit(this@MainActivity, uri, "Suggest an outfit for this")
                     }
                 }
             }
@@ -149,7 +137,6 @@ class MainActivity : AppCompatActivity() {
                 }
 
             imageCapture = ImageCapture.Builder().build()
-
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
@@ -181,9 +168,7 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "MainActivity"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private val REQUIRED_PERMISSIONS =
-            mutableListOf(
-                Manifest.permission.CAMERA
-            ).apply {
+            mutableListOf(Manifest.permission.CAMERA).apply {
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
                     add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
