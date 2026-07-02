@@ -16,7 +16,7 @@ android {
 
         // Reads from: 1. Codemagic env var 2. local.properties 3. empty string
         val groqApiKey = System.getenv("GROQ_API_KEY") ?: run {
-            val properties = Properties() // Removed java.util. prefix
+            val properties = java.util.Properties() // Use full package name
             val localPropertiesFile = rootProject.file("local.properties")
             if (localPropertiesFile.exists()) {
                 localPropertiesFile.inputStream().use { properties.load(it) }
