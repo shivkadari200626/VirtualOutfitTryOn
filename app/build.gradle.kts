@@ -7,35 +7,25 @@ plugins {
 }
 
 android {
-    namespace = "com.kannod.virtualcloset"
-    compileSdk = 34
-
     defaultConfig {
-        applicationId = "com.kannod.virtualcloset"
-        minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
-
-        // Add this block
-        val localProperties = java.util.Properties()
-        val localPropertiesFile = rootProject.file("local.properties")
-        if (localPropertiesFile.exists()) {
-            localPropertiesFile.inputStream().use { localProperties.load(it) }
+        // Reads from: 1. Codemagic env var 2. local.properties 3. empty string
+        val groqApiKey = System.getenv("GROQ_API_KEY") ?: run {
+            val properties = java.util.Properties()
+            val localPropertiesFile = rootProject.file("local.properties")
+            if (localPropertiesFile.exists()) {
+                localPropertiesFile.inputStream().use { properties.load(it) }
+            }
+            properties.getProperty("GROQ_API_KEY", "")
         }
-        val groqApiKey = localProperties.getProperty("GROQ_API_KEY") ?: ""
+        
         buildConfigField("String", "GROQ_API_KEY", "\"$groqApiKey\"")
     }
 
     buildFeatures {
         viewBinding = true
-        buildConfig = true  // This is critical
-    }
-}
-    buildFeatures {
-        viewBinding = true
         buildConfig = true
     }
+}
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
