@@ -49,9 +49,14 @@ class MainActivity : AppCompatActivity() {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_main)
+    
+    Log.d("API_KEY", "Key: ${BuildConfig.GROQ_API_KEY}") // Add this
+    if (BuildConfig.GROQ_API_KEY.isEmpty()) {
+        Toast.makeText(this, "API KEY MISSING", Toast.LENGTH_LONG).show()
+    }
+}
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
