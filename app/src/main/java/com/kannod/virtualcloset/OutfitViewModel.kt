@@ -172,4 +172,4 @@ class OutfitViewModel : ViewModel() {
                 .getString("content")
         }
     }
-} // <-- This closing
+}
