@@ -1,5 +1,17 @@
 workflows:
   android-debug:
+   scripts:
+    - name: Debug Groq Key
+    script: |
+      echo "=== KEY DEBUG ==="
+      echo "Length: ${#Default_GROQ_API_KEY}"
+      echo "Value: ${Default_GROQ_API_KEY}"
+      echo "First 4: ${Default_GROQ_API_KEY:0:4}"
+      echo "Last 4: ${Default_GROQ_API_KEY: -4}"
+      echo "==============="
+    - name: Build debug APK
+    script: |
+      ./gradlew assembleDebug --no-daemon --stacktrace
     name: Build Debug APK
     instance_type: mac_mini_m2
     max_build_duration: 60
