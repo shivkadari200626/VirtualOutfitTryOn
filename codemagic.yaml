@@ -1,36 +1,32 @@
 workflows:
   android-debug:
-   scripts:
-    - name: Debug Groq Key
-    script: |
-      echo "=== KEY DEBUG ==="
-      echo "Length: ${#Default_GROQ_API_KEY}"
-      echo "Value: ${Default_GROQ_API_KEY}"
-      echo "First 4: ${Default_GROQ_API_KEY:0:4}"
-      echo "Last 4: ${Default_GROQ_API_KEY: -4}"
-      echo "==============="
-    - name: Build debug APK
-    script: |
-      ./gradlew assembleDebug --no-daemon --stacktrace
     name: Build Debug APK
     instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
       vars:
         GEMINI_API_KEY: $Default_GEMINI_API_KEY
-        GROQ_API_KEY: $Default_GROQ_API_KEY   # ← Only new line you need
+        GROQ_API_KEY: $Default_GROQ_API_KEY
       java: 17
     scripts:
-      - name: Set up JDK 17
+            - name: Set up JDK 17
         script: |
           java -version
-      - name: Fix gradlew + download wrapper
+            - name: Debug Groq Key
+        script: |
+          echo "=== KEY DEBUG ==="
+          echo "Length: ${#Default_GROQ_API_KEY}"
+          echo "Value: ${Default_GROQ_API_KEY}"
+          echo "First 4: ${Default_GROQ_API_KEY:0:4}"
+          echo "Last 4: ${Default_GROQ_API_KEY: -4}"
+          echo "==============="
+            - name: Fix gradlew + download wrapper
         script: |
           sed -i 's/\r$//' gradlew || true
           chmod +x gradlew
           gradle wrapper --gradle-version 8.4
-      - name: Build debug APK
+            - name: Build debug APK
         script: |
           ./gradlew assembleDebug --no-daemon --stacktrace
     artifacts:
-      - app/build/outputs/apk/debug/*.apk
+            - app/build/outputs/apk/debug/*.apk
