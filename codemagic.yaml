@@ -12,8 +12,14 @@ workflows:
         CM_KEY_PASSWORD: $CM_KEY_PASSWORD
       java: 17
     scripts:
+      - name: Prepare Gradle
+        script: |
+          chmod +x gradlew
+          ./gradlew wrapper --gradle-version 8.4 --distribution-type all || true
+
       - name: Build Release APK
         script: |
+          chmod +x gradlew
           ./gradlew assembleRelease --no-daemon --stacktrace
 
     artifacts:
