@@ -11,8 +11,6 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
-import com.google.mediapipe.tasks.vision.imagesegmenter.ImageSegmenter
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import com.virtualoutfittryon.databinding.ActivityMainBinding
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -21,9 +19,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var cameraExecutor: ExecutorService
-
-    private var poseLandmarker: PoseLandmarker? = null
-    private var imageSegmenter: ImageSegmenter? = null
 
     private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -38,20 +33,11 @@ class MainActivity : AppCompatActivity() {
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        // TODO: Initialize MediaPipe models here (in real app, do it asynchronously)
-        // setupMediaPipe()
-
         if (allPermissionsGranted()) {
             startCamera()
         } else {
             cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
-    }
-
-    private fun setupMediaPipe() {
-        // Pose Landmarker setup (for body keypoints)
-        // Image Segmenter setup (for person segmentation - useful for clothing overlay)
-        Log.d("MainActivity", "MediaPipe models initialized")
     }
 
     private fun startCamera() {
@@ -69,8 +55,16 @@ class MainActivity : AppCompatActivity() {
                 .build()
                 .also {
                     it.setAnalyzer(cameraExecutor) { imageProxy ->
-                        // TODO: Process frame with MediaPipe here
-                        // detectPoseAndSegment(imageProxy)
+                        // Simple demo: move shirt overlay
+                        runOnUiThread {
+                            val width = binding.overlayView.width.toFloat()
+                            val height = binding.overlayView.height.toFloat()
+                            binding.overlayView.shirtRect.set(
+                                width * 0.3f, height * 0.25f,
+                                width * 0.7f, height * 0.55f
+                            )
+                            binding.overlayView.invalidate()
+                        }
                         imageProxy.close()
                     }
                 }
@@ -81,7 +75,7 @@ class MainActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
             } catch (exc: Exception) {
-                Log.e("MainActivity", "Camera binding failed", exc)
+                Log.e("Camera", "Binding failed", exc)
             }
         }, ContextCompat.getMainExecutor(this))
     }
@@ -93,7 +87,5 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
-        poseLandmarker?.close()
-        imageSegmenter?.close()
     }
 }
