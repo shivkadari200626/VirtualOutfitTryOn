@@ -1,7 +1,7 @@
 workflows:
   android-release:
     name: Build Release APK
-        instance_type: linux_x2_large   # ← Change here
+    instance_type: linux_x2_large
     max_build_duration: 60
     environment:
       vars:
@@ -23,16 +23,10 @@ workflows:
 
       - name: Fix gradlew + wrapper
         script: |
-          # Universal line ending fix (works on macOS + Linux)
-          if command -v dos2unix >/dev/null 2>&1; then
-            dos2unix gradlew || true
-          else
-            sed -i 's/\r$//' gradlew 2>/dev/null || sed -i '' 's/\r$//' gradlew 2>/dev/null || true
-          fi
-          
+          # Universal line ending fix
+          sed -i 's/\r$//' gradlew 2>/dev/null || sed -i '' 's/\r$//' gradlew 2>/dev/null || true
           chmod +x gradlew
           
-          # Ensure Gradle wrapper
           ./gradlew wrapper --gradle-version 8.4 --distribution-type all || true
 
       - name: Build Release APK
