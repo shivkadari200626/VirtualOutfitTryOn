@@ -3,14 +3,9 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
-// Load API key BEFORE android block
-val localProperties = java.util.Properties()
-val localPropertiesFile = rootProject.file("local.properties")
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.inputStream().use { localProperties.load(it) }
-}
+// Gradle way: checks env var first, then local.properties, then empty
 val groqApiKey: String = System.getenv("GROQ_API_KEY") 
-    ?: localProperties.getProperty("GROQ_API_KEY") 
+    ?: project.findProperty("GROQ_API_KEY") as String? 
     ?: ""
 
 android {
