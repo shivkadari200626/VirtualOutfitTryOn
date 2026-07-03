@@ -52,6 +52,9 @@ class MainActivity : AppCompatActivity() {
         
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        Log.d("GROQ_DEBUG", "Key: '${BuildConfig.GROQ_API_KEY}'") 
+        Log.d("GROQ_DEBUG", "Key length: ${BuildConfig.GROQ_API_KEY.length}")
         
         Log.d("API_KEY", "Key: ${BuildConfig.GROQ_API_KEY}")
         if (BuildConfig.GROQ_API_KEY.isEmpty()) {
