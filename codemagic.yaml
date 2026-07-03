@@ -1,7 +1,7 @@
 workflows:
   android-release:
     name: Build Release APK
-    instance_type: linux_x2_large
+    instance_type: linux_x2
     max_build_duration: 60
     environment:
       vars:
@@ -23,10 +23,8 @@ workflows:
 
       - name: Fix gradlew + wrapper
         script: |
-          # Universal line ending fix
           sed -i 's/\r$//' gradlew 2>/dev/null || sed -i '' 's/\r$//' gradlew 2>/dev/null || true
           chmod +x gradlew
-          
           ./gradlew wrapper --gradle-version 8.4 --distribution-type all || true
 
       - name: Build Release APK
