@@ -1,7 +1,7 @@
 workflows:
   android-release:
     name: Build Release APK
-    instance_type: mac_mini_m2
+        instance_type: linux_x2_large   # ← Change here
     max_build_duration: 60
     environment:
       vars:
@@ -21,11 +21,19 @@ workflows:
           echo "Last 4: ...${GROQ_API_KEY: -4}"
           echo "====================="
 
-      - name: Fix gradlew permissions + wrapper
+      - name: Fix gradlew + wrapper
         script: |
-          sed -i 's/\r$//' gradlew || true
+          # Universal line ending fix (works on macOS + Linux)
+          if command -v dos2unix >/dev/null 2>&1; then
+            dos2unix gradlew || true
+          else
+            sed -i 's/\r$//' gradlew 2>/dev/null || sed -i '' 's/\r$//' gradlew 2>/dev/null || true
+          fi
+          
           chmod +x gradlew
-          ./gradlew wrapper --gradle-version 8.4 --distribution-type all
+          
+          # Ensure Gradle wrapper
+          ./gradlew wrapper --gradle-version 8.4 --distribution-type all || true
 
       - name: Build Release APK
         script: |
@@ -33,10 +41,3 @@ workflows:
 
     artifacts:
       - app/build/outputs/apk/release/*.apk
-
-    # Enable this if you want AAB instead of APK
-    # - name: Build Release AAB
-    #   script: |
-    #     ./gradlew bundleRelease --no-daemon --stacktrace
-    # artifacts:
-    #   - app/build/outputs/bundle/release/*.aab
