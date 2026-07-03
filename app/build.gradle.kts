@@ -13,6 +13,9 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        // For MediaPipe
+        ndk { abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a")) }
     }
 
     buildTypes {
@@ -22,6 +25,7 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -31,7 +35,6 @@ android {
     }
     buildFeatures {
         viewBinding = true
-        compose = false
     }
 }
 
@@ -41,6 +44,9 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
+
+    // MediaPipe
+    implementation("com.google.mediapipe:tasks-vision:0.10.14")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
