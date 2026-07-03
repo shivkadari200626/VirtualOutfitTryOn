@@ -1,6 +1,6 @@
 workflows:
-  android-debug:
-    name: Build Debug APK
+  android-release:
+    name: Build Release APK
     instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
@@ -12,21 +12,31 @@ workflows:
       - name: Set up JDK 17
         script: |
           java -version
-      - name: Debug Groq Key
+
+      - name: Debug Environment Keys
         script: |
-          echo "=== KEY DEBUG ==="
-          echo "Length: ${#Default_GROQ_API_KEY}"
-          echo "Value: ${Default_GROQ_API_KEY}"
-          echo "First 4: ${Default_GROQ_API_KEY:0:4}"
-          echo "Last 4: ${Default_GROQ_API_KEY: -4}"
-          echo "==============="
-      - name: Fix gradlew + download wrapper
+          echo "=== GROQ KEY DEBUG ==="
+          echo "Length: ${#GROQ_API_KEY}"
+          echo "First 4: ${GROQ_API_KEY:0:4}..."
+          echo "Last 4: ...${GROQ_API_KEY: -4}"
+          echo "====================="
+
+      - name: Fix gradlew permissions + wrapper
         script: |
           sed -i 's/\r$//' gradlew || true
           chmod +x gradlew
-          gradle wrapper --gradle-version 8.4
-      - name: Build debug APK
+          ./gradlew wrapper --gradle-version 8.4 --distribution-type all
+
+      - name: Build Release APK
         script: |
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleRelease --no-daemon --stacktrace
+
     artifacts:
-      - app/build/outputs/apk/debug/*.apk
+      - app/build/outputs/apk/release/*.apk
+
+    # Enable this if you want AAB instead of APK
+    # - name: Build Release AAB
+    #   script: |
+    #     ./gradlew bundleRelease --no-daemon --stacktrace
+    # artifacts:
+    #   - app/build/outputs/bundle/release/*.aab
