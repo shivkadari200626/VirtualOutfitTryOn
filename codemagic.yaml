@@ -6,6 +6,7 @@ workflows:
     environment:
       vars:
         GEMINI_API_KEY: $GEMINI_API_KEY
+        GROQ_API_KEY: $GROQ_API_KEY   # ← Only new line you need
       java: 17
     scripts:
       - name: Set up JDK 17
