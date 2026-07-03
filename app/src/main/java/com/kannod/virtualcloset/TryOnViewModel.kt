@@ -17,63 +17,34 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class TryOnViewModel : ViewModel() {
-
-    private val _resultImage = MutableLiveData<Bitmap?>()
-    val resultImage: LiveData<Bitmap?> = _resultImage
-
-    private val _error = MutableLiveData<String?>()
-    val error: LiveData<String?> = _error
-
-    fun generateOutfit(imageUri: Uri, apiKey: String, contentResolver: ContentResolver) {
+class TryOnViewModel : ViewModel() {
+    
+    fun captureAndProcess(imageBitmap: Bitmap) {
         viewModelScope.launch {
-            _error.postValue(null)
             try {
-                val generativeModel = GenerativeModel(
-                    modelName = "gemini-1.5-pro",
-                    apiKey = apiKey
-                )
-
-                val bitmap = withContext(Dispatchers.IO) {
-                    contentResolver.openInputStream(imageUri)?.use { inputStream ->
-                        BitmapFactory.decodeStream(inputStream)
-                    }
-                }
-
-                if (bitmap == null) {
-                    _error.postValue("Failed to load image")
+                // Add the logs here
+                val key = BuildConfig.GROQ_API_KEY
+                Log.d("GROQ_DEBUG", "Key: '$key'") 
+                Log.d("GROQ_DEBUG", "Key length: ${key.length}")
+                Log.d("GROQ_DEBUG", "Starts with gsk_: ${key.startsWith("gsk_")}")
+                
+                if (key.isEmpty()) {
+                    Log.e("GROQ_DEBUG", "KEY IS EMPTY!")
                     return@launch
                 }
-
-                val prompt = "You are a virtual try-on AI. Given this person's photo, replace their current outfit with a stylish casual outfit: blue denim jacket, white t-shirt, black jeans. Keep the person's face, body pose, and background identical. Photorealistic. Return only the final image."
-
-                val content = content {
-                    image(bitmap)
-                    text(prompt)
-                }
-
-                val response = generativeModel.generateContent(content)
-
-                val imagePart = response.candidates
-                    ?.firstOrNull()?.content?.parts
-                    ?.filterIsInstance<ImagePart>()  // Changed to ImagePart
-                    ?.firstOrNull()
-
-                if (imagePart != null) {
-                    val resultBitmap = imagePart.image  // ImagePart already gives you a Bitmap
-                    _resultImage.postValue(resultBitmap)
-                } else {
-                    val textResponse = response.text
-                    Log.d("GeminiVM", "No image in response. Text: $textResponse")
-                    _error.postValue("Gemini didn't return an image: ${textResponse ?: "Empty response"}")
-                }
-
+                
+                val authHeader = "Bearer $key"
+                Log.d("GROQ_DEBUG", "Sending header: Bearer ${key.take(7)}...")
+                
+                // Your actual GROQ API call
+                val response = groqApi.chatCompletion(authHeader, request)
+                
             } catch (e: Exception) {
-                Log.e("GeminiVM", "Error: ${e.message}", e)
-                _error.postValue("Gemini error: ${e.localizedMessage}")
+                Log.e("GROQ_DEBUG", "API error", e)
             }
         }
     }
-
+}
     fun clearError() {
         _error.value = null
     }
