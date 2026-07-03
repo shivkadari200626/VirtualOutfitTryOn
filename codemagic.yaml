@@ -12,10 +12,12 @@ workflows:
         CM_KEY_PASSWORD: $CM_KEY_PASSWORD
       java: 17
     scripts:
-      - name: Prepare Gradle
+      - name: Regenerate Gradle Wrapper
         script: |
-          chmod +x gradlew
+          rm -rf .gradle gradle/wrapper gradlew* 2>/dev/null || true
+          chmod +x gradlew 2>/dev/null || true
           ./gradlew wrapper --gradle-version 8.4 --distribution-type all || true
+          chmod +x gradlew
 
       - name: Build Release APK
         script: |
