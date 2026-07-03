@@ -4,9 +4,9 @@ plugins {
 }
 
 // Gradle way: checks env var first, then local.properties, then empty
-val groqApiKey: String = System.getenv("GROQ_API_KEY") 
-    ?: project.findProperty("GROQ_API_KEY") as String? 
-    ?: ""
+val groqApiKey: String = System.getenv("GROQ_API_KEY") ?: ""
+println(">>> BUILD: GROQ_API_KEY length = ${groqApiKey.length}") 
+println(">>> BUILD: GROQ_API_KEY starts with = ${groqApiKey.take(4)}")
 
 android {
     namespace = "com.kannod.virtualcloset"
