@@ -14,9 +14,10 @@ android {
         versionCode = 1
         versionName = "1.0"
         ndk { abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a")) }
+        
+        // ADD THIS LINE HERE TOO for your API key
+        buildConfigField("String", "GROQ_API_KEY", "\"${System.getenv("Default_GROQ_API_KEY") ?: ""}\"")
     }
-
-    
 
     signingConfigs {
         create("release") {
@@ -27,11 +28,22 @@ android {
         }
     }
 
-    buildTypes {
-        release {
-            isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("release")
+    buildTypes { ... }
+
+    // PUT IT HERE 👇
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true  // <-- THIS ONE
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
         }
         debug {
             signingConfig = signingConfigs.getByName("debug")
