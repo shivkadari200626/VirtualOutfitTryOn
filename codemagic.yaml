@@ -18,7 +18,7 @@ workflows:
           echo "Length: ${#Default_GROQ_API_KEY}"
 
       - name: Build
-        script: ./gradlew --no-configuration-cache assembleRelease  --stacktrace# <-- FLAG MOVED HERE
+        script: "./gradlew --no-configuration-cache assembleRelease --stacktrace"  # <-- ADD QUOTES
     artifacts:
       - app/build/outputs/**/*.apk
       - app/build/outputs/**/*.aab
