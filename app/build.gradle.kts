@@ -66,4 +66,17 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+
+    // Retrofit + OkHttp for Groq/Gemini API
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // MLKit Face + Pose
+    implementation("com.google.mlkit:face-detection:16.1.7")
+    implementation("com.google.mlkit:pose-detection:18.0.6")
+
+    // Gson for JSON
+    implementation("com.google.code.gson:gson:2.11.0")
 }
