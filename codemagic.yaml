@@ -1,0 +1,28 @@
+workflows:
+  android-release:
+    name: Build Release APK
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      vars:
+        GEMINI_API_KEY: $Default_GEMINI_API_KEY
+        GROQ_API_KEY: $Default_GROQ_API_KEY
+        CM_KEYSTORE_PASSWORD: $CM_KEYSTORE_PASSWORD
+        CM_KEY_ALIAS: upload
+        CM_KEY_PASSWORD: $CM_KEY_PASSWORD
+      java: 17
+    scripts:
+      - name: Regenerate Gradle Wrapper
+        script: |
+          rm -rf .gradle gradle/wrapper gradlew* 2>/dev/null || true
+          chmod +x gradlew 2>/dev/null || true
+          ./gradlew wrapper --gradle-version 8.4 --distribution-type all || true
+          chmod +x gradlew
+
+      - name: Build Release APK
+        script: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace
+
+    artifacts:
+      - app/build/outputs/apk/release/*.apk
