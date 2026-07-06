@@ -1,28 +1,27 @@
 workflows:
   android-release:
-    name: Build Release APK
+    name: Android Release Build
     instance_type: mac_mini_m2
-    max_build_duration: 60
+    max_build_duration: 45
     environment:
+      android_sdk_version: 35
       vars:
-        GEMINI_API_KEY: $Default_GEMINI_API_KEY
-        GROQ_API_KEY: $Default_GROQ_API_KEY
-        CM_KEYSTORE_PASSWORD: $CM_KEYSTORE_PASSWORD
-        CM_KEY_ALIAS: upload
-        CM_KEY_PASSWORD: $CM_KEY_PASSWORD
-      java: 17
-    scripts:
-      - name: Regenerate Gradle Wrapper
-        script: |
-          rm -rf .gradle gradle/wrapper gradlew* 2>/dev/null || true
-          chmod +x gradlew 2>/dev/null || true
-          ./gradlew wrapper --gradle-version 8.4 --distribution-type all || true
-          chmod +x gradlew
+        KEYSTORE_PASSWORD: $KEYSTORE_PASSWORD
+        KEY_ALIAS: $KEY_ALIAS
+        KEY_PASSWORD: $KEY_PASSWORD
 
-      - name: Build Release APK
+    scripts:
+      - name: Gradle Clean & Build
         script: |
-          chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          chmod +x ./gradlew
+          ./gradlew clean
+          ./gradlew assembleRelease
 
     artifacts:
-      - app/build/outputs/apk/release/*.apk
+      - path: app/build/outputs/apk/release/app-release.apk
+        name: VirtualOutfitTryOn.apk
+
+    publishing:
+      email:
+        recipients:
+          - shivkadari@gmail.com
