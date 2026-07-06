@@ -5,16 +5,20 @@ workflows:
     max_build_duration: 120
     environment:
       groups:
-        - Default  # Your GROQ_API_KEY group
+        - Default
       android_signing:
-        - VirtualOutfitTryOn  # Must match the name in Codemagic
+        - VirtualOutfitTryOn
     scripts:
+      - name: Make gradlew executable
+        script: chmod +x ./gradlew  # <-- ADD THIS LINE
+
       - name: Debug Groq Key
         script: |
           echo "=== KEY DEBUG ==="
           echo "Length: ${#Default_GROQ_API_KEY}"
+
       - name: Build
-        script: ./gradlew assembleRelease  # <-- removed cd android
+        script: ./gradlew assembleRelease
     artifacts:
       - app/build/outputs/**/*.apk
       - app/build/outputs/**/*.aab
