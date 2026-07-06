@@ -15,7 +15,7 @@ android {
         versionName = "1.0"
         ndk { abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a")) }
         
-        // ADD THIS LINE HERE TOO for your API key
+        // API key for Groq/Gemini
         buildConfigField("String", "GROQ_API_KEY", "\"${System.getenv("Default_GROQ_API_KEY") ?: ""}\"")
     }
 
@@ -28,28 +28,21 @@ android {
         }
     }
 
-    buildTypes { ... }
-
-    // PUT IT HERE 👇
-    buildFeatures {
-        viewBinding = true
-        buildConfig = true  // <-- THIS ONE
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-}
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
         debug {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
-    
+
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true  // <-- Must be true for BuildConfig.GROQ_API_KEY
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -57,16 +50,13 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
-    }
-    buildFeatures {
-        viewBinding = true
     }
 }
 
 dependencies {
     // CameraX
     implementation(libs.androidx.camera.core)
-    implementation(libs.androidx.camera2) // <-- Fixed this line
+    implementation(libs.androidx.camera2) // Fixed
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
 
