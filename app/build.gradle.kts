@@ -16,13 +16,28 @@ android {
         ndk { abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a")) }
     }
 
+    
+
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("CM_KEYSTORE_PATH") ?: "debug.keystore")
+            storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("CM_KEY_ALIAS")
+            keyPassword = System.getenv("CM_KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("release")
         }
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
+    
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
