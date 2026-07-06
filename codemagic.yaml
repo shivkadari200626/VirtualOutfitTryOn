@@ -10,7 +10,7 @@ workflows:
         - VirtualOutfitTryOn
     scripts:
       - name: Make gradlew executable
-        script: chmod +x ./gradlew  # <-- ADD THIS LINE
+        script: chmod +x ./gradlew
 
       - name: Debug Groq Key
         script: |
@@ -18,7 +18,7 @@ workflows:
           echo "Length: ${#Default_GROQ_API_KEY}"
 
       - name: Build
-        script: ./gradlew assembleRelease--no-configuration-cache
+        script: ./gradlew --no-configuration-cache assembleRelease  # <-- FLAG MOVED HERE
     artifacts:
       - app/build/outputs/**/*.apk
       - app/build/outputs/**/*.aab
