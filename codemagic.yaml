@@ -18,7 +18,7 @@ workflows:
           echo "Length: ${#Default_GROQ_API_KEY}"
 
       - name: Build
-        script: ./gradlew assembleRelease
+        script: ./gradlew assembleRelease--no-configuration-cache
     artifacts:
       - app/build/outputs/**/*.apk
       - app/build/outputs/**/*.aab
