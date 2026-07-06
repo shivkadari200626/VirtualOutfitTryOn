@@ -1,4 +1,8 @@
-package com.kannod.virtualcloset
+package com.virtualoutfittryon  // <-- CHANGE THIS
+
+import com.virtualoutfittryon.databinding.ActivityMainBinding
+import com.virtualoutfittryon.databinding.ActivityResultBinding
+
 import com.kannod.virtualcloset.BuildConfig
 import android.content.Context
 import android.graphics.*
