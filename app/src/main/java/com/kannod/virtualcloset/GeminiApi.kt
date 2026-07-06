@@ -1,4 +1,6 @@
 package com.kannod.virtualcloset
+import com.virtualoutfittryon.databinding.ActivityMainBinding
+import com.virtualoutfittryon.databinding.ActivityResultBinding
 
 import retrofit2.Response
 import retrofit2.http.Body
