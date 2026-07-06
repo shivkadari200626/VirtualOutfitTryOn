@@ -1,10 +1,20 @@
 workflows:
   android-release:
-    name: Build APK
+    name: Android Release
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      groups:
+        - Default  # This is where your GROQ_API_KEY is
+      android_signing:
+        - VirtualOutfitTryOn  # <-- This is the name from your screenshot
     scripts:
-      - name: Build
+      - name: Debug Groq Key
         script: |
-          chmod +x ./gradlew
-          ./gradlew clean assembleRelease
+          echo "=== KEY DEBUG ==="
+          echo "Length: ${#Default_GROQ_API_KEY}"
+      - name: Build
+        script: cd android && ./gradlew assembleRelease
     artifacts:
-      - app/build/outputs/apk/release/app-release.apk
+      - android/app/build/outputs/**/*.apk
+      - android/app/build/outputs/**/*.aab
