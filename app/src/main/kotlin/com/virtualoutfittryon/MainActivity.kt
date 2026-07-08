@@ -4,17 +4,17 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
+import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -28,39 +28,38 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        
+
         viewFinder = findViewById(R.id.viewFinder)
         poseOverlay = PoseOverlay(this)
-        
+
+        // Add overlay on top of PreviewView
+        (viewFinder.parent as androidx.constraintlayout.widget.ConstraintLayout).addView(poseOverlay)
+
         setupPoseLandmarker()
-        
+
         if (allPermissionsGranted()) {
             startCamera()
         } else {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 10)
         }
-        
+
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
     private fun setupPoseLandmarker() {
-        val baseOptions = BaseOptions.builder()
-            .setModelAssetPath("pose_landmarker_lite.task")
-            .build()
+        val baseOptionsBuilder = BaseOptions.builder()
+          .setModelAssetPath("pose_landmarker_lite.task")
 
-        poseLandmarker = PoseLandmarker.builder()
-            .setBaseOptions(baseOptions)
-            .setRunningMode(PoseLandmarker.RunningMode.LIVE_STREAM)
-            .setNumPoses(1)
-            .setMinPoseDetectionConfidence(0.5f)
-            .setResultListener { result, input ->
-                runOnUiThread {
-                    // This will draw on the overlay
-                    // You need to add a custom View on top of PreviewView for this
-                }
-            }
-            .setErrorListener { Log.e("Pose", it.message ?: "Error") }
-            .build()
+        val optionsBuilder = PoseLandmarker.PoseLandmarkerOptions.builder()
+          .setBaseOptions(baseOptionsBuilder.build())
+          .setRunningMode(RunningMode.LIVE_STREAM)
+          .setMinPoseDetectionConfidence(0.5f)
+          .setResultListener { result, _ ->
+               runOnUiThread { poseOverlay.updateResults(result) }
+           }
+          .setErrorListener { error -> Log.e("Pose", error) }
+
+        poseLandmarker = PoseLandmarker.createFromOptions(this, optionsBuilder.build())
     }
 
     private fun startCamera() {
@@ -74,9 +73,9 @@ class MainActivity : AppCompatActivity() {
             }
 
             val imageAnalyzer = ImageAnalysis.Builder()
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .build()
-                .also {
+              .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+              .build()
+              .also {
                     it.setAnalyzer(cameraExecutor, PoseAnalyzer())
                 }
 
@@ -93,11 +92,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private inner class PoseAnalyzer : ImageAnalysis.Analyzer {
-        override fun analyze(imageProxy: ImageProxy) {
-            // Convert ImageProxy to MediaPipe Image and run poseLandmarker
-            // We'll wire this properly after build passes
+        override fun analyze(imageProxy: androidx.camera.core.ImageProxy) {
+            val bitmap = imageProxy.toBitmap() // You need this extension
+            val mpImage = BitmapImageBuilder(bitmap).build()
+            poseLandmarker.detectAsync(mpImage, System.currentTimeMillis())
             imageProxy.close()
         }
+    }
+
+    // Add this extension function at bottom of file
+    private fun androidx.camera.core.ImageProxy.toBitmap(): android.graphics.Bitmap {
+        val buffer = planes[0].buffer
+        buffer.rewind()
+        val bytes = ByteArray(buffer.capacity())
+        buffer.get(bytes)
+        return android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     }
 
     private fun allPermissionsGranted() = arrayOf(Manifest.permission.CAMERA).all {
@@ -107,5 +116,6 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
+        poseLandmarker.close()
     }
 }
