@@ -4,41 +4,46 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.view.View
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
-import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 
-class PoseOverlay(private val context: Context) {
-    private val paint = Paint().apply { color = Color.GREEN; strokeWidth = 8f; style = Paint.Style.STROKE }
-    private val pointPaint = Paint().apply { color = Color.RED; style = Paint.Style.FILL }
+class PoseOverlay(context: Context) : View(context) {
+    private var results: PoseLandmarkerResult? = null
 
-    fun draw(canvas: Canvas, result: PoseLandmarkerResult) {
-        val allLandmarks = result.poseLandmarks()
-        if (allLandmarks.isEmpty()) return
-        val landmarks = allLandmarks[0]
-
-        drawConnection(canvas, landmarks, 11, 13)
-        drawConnection(canvas, landmarks, 13, 15)
-        drawConnection(canvas, landmarks, 12, 14)
-        drawConnection(canvas, landmarks, 14, 16)
-        drawConnection(canvas, landmarks, 11, 12)
-        drawConnection(canvas, landmarks, 11, 23)
-        drawConnection(canvas, landmarks, 12, 24)
-        drawConnection(canvas, landmarks, 23, 24)
-        drawConnection(canvas, landmarks, 23, 25)
-        drawConnection(canvas, landmarks, 25, 27)
-        drawConnection(canvas, landmarks, 24, 26)
-        drawConnection(canvas, landmarks, 26, 28)
-
-        for (landmark in landmarks) {
-            val x = landmark.x() * canvas.width
-            val y = landmark.y() * canvas.height
-            canvas.drawCircle(x, y, 10f, pointPaint)
-        }
+    private val paint = Paint().apply {
+        color = Color.GREEN
+        strokeWidth = 8f
+        style = Paint.Style.STROKE
+    }
+    private val pointPaint = Paint().apply {
+        color = Color.RED
+        style = Paint.Style.FILL
     }
 
-    private fun drawConnection(canvas: Canvas, landmarks: List<NormalizedLandmark>, start: Int, end: Int) {
-        if (start >= landmarks.size || end >= landmarks.size) return
-        val s = landmarks[start]; val e = landmarks[end]
-        canvas.drawLine(s.x() * canvas.width, s.y() * canvas.height, e.x() * canvas.width, e.y() * canvas.height, paint)
+    fun updateResults(result: PoseLandmarkerResult) {
+        results = result
+        invalidate()
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        val landmarksList = results?.poseLandmarks // <-- no () here
+        if (landmarksList.isNullOrEmpty()) return
+        val landmarks = landmarksList[0]
+
+        val connections = listOf(
+            11 to 13, 13 to 15, 12 to 14, 14 to 16,
+            11 to 12, 11 to 23, 12 to 24, 23 to 24,
+            23 to 25, 25 to 27, 24 to 26, 26 to 28
+        )
+        for((start, end) in connections) {
+            if(start < landmarks.size && end < landmarks.size) {
+                val s = landmarks[start]; val e = landmarks[end]
+                canvas.drawLine(s.x() * width, s.y() * height, e.x() * width, e.y() * height, paint)
+            }
+        }
+        for (landmark in landmarks) {
+            canvas.drawCircle(landmark.x() * width, landmark.y() * height, 10f, pointPaint)
+        }
     }
 }
