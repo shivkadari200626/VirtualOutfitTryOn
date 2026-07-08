@@ -27,7 +27,7 @@ class PoseOverlay(context: Context) : View(context) {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        val landmarksList = results?.poseLandmarks // <-- no () here
+        val landmarksList = results?.getPoseLandmarks() // <-- use getPoseLandmarks()
         if (landmarksList.isNullOrEmpty()) return
         val landmarks = landmarksList[0]
 
