@@ -1,8 +1,8 @@
-package com.virtualoutfittryon  // <-- CHANGE THIS
+package com.virtualoutfittryon  // NEW
 
 import com.virtualoutfittryon.databinding.ActivityMainBinding
 import com.virtualoutfittryon.databinding.ActivityResultBinding
-
+import com.virtualoutfittryon.BuildConfig
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
