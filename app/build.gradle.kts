@@ -51,7 +51,7 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-}
+} // <-- This bracket closes android {}
 
 dependencies {
     // CameraX
@@ -60,13 +60,24 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
 
-    // MediaPipe - handles pose for us
+    // MediaPipe
     implementation("com.google.mediapipe:tasks-vision:0.10.14")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4") // <-- FIXED
 
-    //
+    // Retrofit + OkHttp for Groq/Gemini API
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // MLKit - ONLY Face. We use MediaPipe for pose
+    implementation("com.google.mlkit:face-detection:16.1.7")
+    
+    // Gson for JSON
+    implementation("com.google.code.gson:gson:2.11.0")
+}
