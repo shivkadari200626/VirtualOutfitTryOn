@@ -75,10 +75,10 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // MLKit Face + Pose - CORRECT VERSIONS
+    // MLKit Face + Pose - CORRECT
     implementation("com.google.mlkit:face-detection:16.1.7")
-    implementation("com.google.mlkit:pose-detection:18.0.0")
-    implementation("com.google.mlkit:pose-detection-accurate:18.0.0")
+    implementation("com.google.mlkit:pose-detection:18.0.0") 
+    implementation("com.google.mlkit:pose-detection-common:18.0.0")
 
     // Gson for JSON
     implementation("com.google.code.gson:gson:2.11.0")
