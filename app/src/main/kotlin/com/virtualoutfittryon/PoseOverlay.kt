@@ -8,18 +8,13 @@ import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 
 class PoseOverlay(private val context: Context) {
-    private val paint = Paint().apply {
-        color = Color.GREEN
-        strokeWidth = 8f
-        style = Paint.Style.STROKE
-    }
-    private val pointPaint = Paint().apply {
-        color = Color.RED
-        style = Paint.Style.FILL
-    }
+    private val paint = Paint().apply { color = Color.GREEN; strokeWidth = 8f; style = Paint.Style.STROKE }
+    private val pointPaint = Paint().apply { color = Color.RED; style = Paint.Style.FILL }
 
     fun draw(canvas: Canvas, result: PoseLandmarkerResult) {
-        val landmarks = result.poseLandmarks().firstOrNull()?: return
+        val allLandmarks = result.poseLandmarks()
+        if (allLandmarks.isEmpty()) return
+        val landmarks = allLandmarks[0]
 
         drawConnection(canvas, landmarks, 11, 13)
         drawConnection(canvas, landmarks, 13, 15)
@@ -34,7 +29,7 @@ class PoseOverlay(private val context: Context) {
         drawConnection(canvas, landmarks, 24, 26)
         drawConnection(canvas, landmarks, 26, 28)
 
-        landmarks.forEach { landmark ->
+        for (landmark in landmarks) {
             val x = landmark.x() * canvas.width
             val y = landmark.y() * canvas.height
             canvas.drawCircle(x, y, 10f, pointPaint)
@@ -43,12 +38,7 @@ class PoseOverlay(private val context: Context) {
 
     private fun drawConnection(canvas: Canvas, landmarks: List<NormalizedLandmark>, start: Int, end: Int) {
         if (start >= landmarks.size || end >= landmarks.size) return
-        val startLandmark = landmarks[start]
-        val endLandmark = landmarks[end]
-        canvas.drawLine(
-            startLandmark.x() * canvas.width, startLandmark.y() * canvas.height,
-            endLandmark.x() * canvas.width, endLandmark.y() * canvas.height,
-            paint
-        )
+        val s = landmarks[start]; val e = landmarks[end]
+        canvas.drawLine(s.x() * canvas.width, s.y() * canvas.height, e.x() * canvas.width, e.y() * canvas.height, paint)
     }
 }
