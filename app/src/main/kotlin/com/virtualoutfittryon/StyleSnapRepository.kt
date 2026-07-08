@@ -9,7 +9,7 @@ class StyleSnapRepository {
             model = "llama3-8b-8192",
             messages = listOf(Message("user", "Based on this body pose data: $poseData, suggest 3 outfit styles"))
         )
-        val response = GeminiApi.service.getStyleSuggestion("Bearer $apiKey", request)
+        val response = GroqApi.service.getStyleSuggestion("Bearer $apiKey", request)
         return if (response.isSuccessful) {
             response.body()?.choices?.firstOrNull()?.message?.content?: "No suggestion"
         } else {
