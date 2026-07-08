@@ -56,7 +56,7 @@ android {
 dependencies {
     // CameraX
     implementation(libs.androidx.camera.core)
-    implementation(libs.androidx.camera2) // Fixed
+    implementation(libs.androidx.camera2) 
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
 
@@ -75,10 +75,10 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    // MLKit Face + Pose - CORRECT
+    // MLKit - FIXED VERSIONS THAT EXIST
     implementation("com.google.mlkit:face-detection:16.1.7")
-    implementation("com.google.mlkit:pose-detection:18.0.0") 
-    implementation("com.google.mlkit:pose-detection-common:18.0.0")
+    implementation("com.google.mlkit:pose-detection:18.0.0")
+    implementation("com.google.mlkit:pose-detection-accurate-with-landmarks:18.0.0") // <-- THIS ONE
 
     // Gson for JSON
     implementation("com.google.code.gson:gson:2.11.0")
