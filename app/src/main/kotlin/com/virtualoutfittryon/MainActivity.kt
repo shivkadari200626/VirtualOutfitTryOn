@@ -3,52 +3,109 @@ package com.virtualoutfittryon
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.virtualoutfittryon.databinding.ActivityMainBinding
+import com.google.mediapipe.tasks.core.BaseOptions
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
-    private val CAMERA_PERMISSION_CODE = 100
+    private lateinit var viewFinder: PreviewView
+    private lateinit var poseLandmarker: PoseLandmarker
+    private lateinit var poseOverlay: PoseOverlay
+    private lateinit var cameraExecutor: ExecutorService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
+        setContentView(R.layout.activity_main)
+        
+        viewFinder = findViewById(R.id.viewFinder)
+        poseOverlay = PoseOverlay(this)
+        
+        setupPoseLandmarker()
+        
         if (allPermissionsGranted()) {
             startCamera()
         } else {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 10)
         }
+        
+        cameraExecutor = Executors.newSingleThreadExecutor()
+    }
+
+    private fun setupPoseLandmarker() {
+        val baseOptions = BaseOptions.builder()
+            .setModelAssetPath("pose_landmarker_lite.task")
+            .build()
+
+        poseLandmarker = PoseLandmarker.builder()
+            .setBaseOptions(baseOptions)
+            .setRunningMode(PoseLandmarker.RunningMode.LIVE_STREAM)
+            .setNumPoses(1)
+            .setMinPoseDetectionConfidence(0.5f)
+            .setResultListener { result, input ->
+                runOnUiThread {
+                    // This will draw on the overlay
+                    // You need to add a custom View on top of PreviewView for this
+                }
+            }
+            .setErrorListener { Log.e("Pose", it.message ?: "Error") }
+            .build()
     }
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
         cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+
             val preview = Preview.Builder().build().also {
-                it.surfaceProvider = binding.viewFinder.surfaceProvider
+                it.setSurfaceProvider(viewFinder.surfaceProvider)
             }
+
+            val imageAnalyzer = ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build()
+                .also {
+                    it.setAnalyzer(cameraExecutor, PoseAnalyzer())
+                }
+
             val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(this, cameraSelector, preview)
-            } catch (e: Exception) {
-                Toast.makeText(this, "Camera bind failed", Toast.LENGTH_SHORT).show()
+                cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
+            } catch (exc: Exception) {
+                Log.e("Camera", "Use case binding failed", exc)
             }
+
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun allPermissionsGranted() = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+    private inner class PoseAnalyzer : ImageAnalysis.Analyzer {
+        override fun analyze(imageProxy: ImageProxy) {
+            // Convert ImageProxy to MediaPipe Image and run poseLandmarker
+            // We'll wire this properly after build passes
+            imageProxy.close()
+        }
+    }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == CAMERA_PERMISSION_CODE && allPermissionsGranted()) startCamera()
+    private fun allPermissionsGranted() = arrayOf(Manifest.permission.CAMERA).all {
+        ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
     }
 }
