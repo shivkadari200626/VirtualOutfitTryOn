@@ -41,7 +41,7 @@ android {
 
     buildFeatures {
         viewBinding = true
-        buildConfig = true  // <-- Must be true for BuildConfig.GROQ_API_KEY
+        buildConfig = true
     }
 
     compileOptions {
@@ -60,7 +60,7 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
 
-    // MediaPipe
+    // MediaPipe - handles pose for us
     implementation("com.google.mediapipe:tasks-vision:0.10.14")
 
     implementation(libs.androidx.core.ktx)
@@ -69,21 +69,4 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
 
-    // Retrofit + OkHttp for Groq/Gemini API
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-
-    // MLKit - FIXED VERSIONS THAT EXIST
-    implementation("com.google.mlkit:face-detection:16.1.7")
-    
-    // Gson for JSON
-    implementation("com.google.code.gson:gson:2.11.0")
-
-    // MLKit BOM - this version has pose
-    implementation(platform("com.google.mlkit:vision-bom:32.2.0")) 
-    implementation("com.google.mlkit:face-detection")
-    implementation("com.google.mlkit:pose-detection")
-    implementation("com.google.mlkit:pose-detection-accurate-with-landmarks")
-}
+    //
