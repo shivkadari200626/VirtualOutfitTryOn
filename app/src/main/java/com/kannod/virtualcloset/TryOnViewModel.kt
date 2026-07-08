@@ -1,7 +1,8 @@
-package com.virtualoutfittryon  // <-- CHANGE THIS
+package com.virtualoutfittryon  // NEW
 
 import com.virtualoutfittryon.databinding.ActivityMainBinding
 import com.virtualoutfittryon.databinding.ActivityResultBinding
+import com.virtualoutfittryon.BuildConfig
 
 
 import android.graphics.Bitmap
