@@ -77,9 +77,13 @@ dependencies {
 
     // MLKit - FIXED VERSIONS THAT EXIST
     implementation("com.google.mlkit:face-detection:16.1.7")
-    implementation("com.google.mlkit:pose-detection:18.0.0")
-    implementation("com.google.mlkit:pose-detection-accurate-with-landmarks:18.0.0") // <-- THIS ONE
-
+    
     // Gson for JSON
     implementation("com.google.code.gson:gson:2.11.0")
+
+    // MLKit BOM - this version has pose
+    implementation(platform("com.google.mlkit:vision-bom:32.2.0")) 
+    implementation("com.google.mlkit:face-detection")
+    implementation("com.google.mlkit:pose-detection")
+    implementation("com.google.mlkit:pose-detection-accurate-with-landmarks")
 }
