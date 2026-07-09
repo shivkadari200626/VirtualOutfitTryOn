@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.view.View
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
+import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 
 class PoseOverlay(context: Context) : View(context) {
     private var results: PoseLandmarkerResult? = null
@@ -27,7 +28,14 @@ class PoseOverlay(context: Context) : View(context) {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        val landmarksList = results?.poseLandmarks() // FIX: use () again
+
+        // This works for both.poseLandmarks and.poseLandmarks()
+        val landmarksList: List<List<NormalizedLandmark>>? = try {
+            results?.poseLandmarks() // try function first
+        } catch (e: Exception) {
+            results?.poseLandmarks // try property
+        }
+
         if (landmarksList.isNullOrEmpty()) return
         val landmarks = landmarksList[0]
 
