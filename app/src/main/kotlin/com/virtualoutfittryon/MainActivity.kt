@@ -2,6 +2,9 @@ package com.virtualoutfittryon
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.ImageFormat
+import android.graphics.Rect
+import android.graphics.YuvImage
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -13,9 +16,11 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
+import java.io.ByteArrayOutputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -49,20 +54,20 @@ class MainActivity : AppCompatActivity() {
     private fun setupPoseLandmarker() {
         try {
             val baseOptions = BaseOptions.builder()
-               .setModelAssetPath("pose_landmarker_lite.task")
-               .build()
+              .setModelAssetPath("pose_landmarker_lite.task")
+              .build()
 
             val options = PoseLandmarker.PoseLandmarkerOptions.builder()
-               .setBaseOptions(baseOptions)
-               .setRunningMode(RunningMode.LIVE_STREAM)
-               .setMinPoseDetectionConfidence(0.5f)
-               .setResultListener { result, _ ->
+              .setBaseOptions(baseOptions)
+              .setRunningMode(RunningMode.LIVE_STREAM)
+              .setMinPoseDetectionConfidence(0.5f)
+              .setResultListener { result, _ ->
                     runOnUiThread { poseOverlay.updateResults(result) }
                 }
-               .setErrorListener { error: RuntimeException ->
+              .setErrorListener { error: RuntimeException ->
                     Log.e("Pose", "MediaPipe error: ${error.message}")
                 }
-               .build()
+              .build()
 
             poseLandmarker = PoseLandmarker.createFromOptions(this, options)
             Log.d("Pose", "MediaPipe initialized successfully")
@@ -82,8 +87,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             val imageAnalyzer = ImageAnalysis.Builder()
-               .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-               .build().also {
+              .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+              .build().also {
                     it.setAnalyzer(cameraExecutor, PoseAnalyzer())
                 }
 
@@ -101,11 +106,46 @@ class MainActivity : AppCompatActivity() {
     }
 
     private inner class PoseAnalyzer : ImageAnalysis.Analyzer {
+        private var lastProcessedTimestamp = 0L
+        
         override fun analyze(imageProxy: ImageProxy) {
-            // Disabled for now to prevent crash. We'll enable after app opens
-            // TODO: Convert ImageProxy to Bitmap and run poseLandmarker.detectAsync()
+            val currentTimestamp = System.currentTimeMillis()
+            // Process only every 100ms to avoid lag
+            if (currentTimestamp - lastProcessedTimestamp >= 100) {
+                lastProcessedTimestamp = currentTimestamp
+                
+                try {
+                    val bitmap = imageProxy.toBitmap()
+                    val mpImage = BitmapImageBuilder(bitmap).build()
+                    poseLandmarker?.detectAsync(mpImage, currentTimestamp)
+                } catch (e: Exception) {
+                    Log.e("Pose", "Error processing frame", e)
+                }
+            }
             imageProxy.close()
         }
+    }
+
+    // THIS IS THE MISSING toBitmap FUNCTION
+    private fun ImageProxy.toBitmap(): android.graphics.Bitmap {
+        val yBuffer = planes[0].buffer
+        val uBuffer = planes[1].buffer
+        val vBuffer = planes[2].buffer
+
+        val ySize = yBuffer.remaining()
+        val uSize = uBuffer.remaining()
+        val vSize = vBuffer.remaining()
+
+        val nv21 = ByteArray(ySize + uSize + vSize)
+        yBuffer.get(nv21, 0, ySize)
+        vBuffer.get(nv21, ySize, vSize)
+        uBuffer.get(nv21, ySize + vSize, uSize)
+
+        val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
+        val out = ByteArrayOutputStream()
+        yuvImage.compressToJpeg(Rect(0, 0, this.width, this.height), 50, out)
+        val yuv = out.toByteArray()
+        return android.graphics.BitmapFactory.decodeByteArray(yuv, 0, yuv.size)
     }
 
     override fun onRequestPermissionsResult(
