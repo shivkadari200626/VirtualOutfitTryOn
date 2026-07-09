@@ -115,7 +115,7 @@ class MainActivity : AppCompatActivity() {
                 lastProcessedTimestamp = currentTimestamp
                 
                 try {
-                    val bitmap = imageProxy.toBitmap()
+                    val bitmap = imageProxy.toBitmap() // this uses the function below
                     val mpImage = BitmapImageBuilder(bitmap).build()
                     poseLandmarker?.detectAsync(mpImage, currentTimestamp)
                 } catch (e: Exception) {
